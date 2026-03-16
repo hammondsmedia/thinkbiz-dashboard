@@ -1,5 +1,16 @@
 import { DollarSign, Users, Handshake, Heart } from "lucide-react";
 
+interface WeeklyLog {
+  revenue: number;
+  visitors_brought: number;
+  one_on_ones_had: number;
+  referrals_given: number;
+}
+
+interface ScorecardsProps {
+  data: WeeklyLog[];
+}
+
 interface ScorecardProps {
   title: string;
   value: string;
@@ -30,30 +41,35 @@ function Scorecard({ title, value, subtitle, icon, accentColor }: ScorecardProps
   );
 }
 
-export function Scorecards() {
+export function Scorecards({ data }: ScorecardsProps) {
+  const totalRevenue = data.reduce((acc, log) => acc + (log.revenue || 0), 0);
+  const totalVisitors = data.reduce((acc, log) => acc + (log.visitors_brought || 0), 0);
+  const totalOneOnOnes = data.reduce((acc, log) => acc + (log.one_on_ones_had || 0), 0);
+  const totalReferrals = data.reduce((acc, log) => acc + (log.referrals_given || 0), 0);
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <Scorecard
         title="Total Revenue"
-        value="$15,250"
+        value={`$${totalRevenue.toLocaleString()}`}
         icon={<DollarSign className="h-5 w-5" />}
         accentColor="#4CAF50"
       />
       <Scorecard
         title="Visitors Brought"
-        value="12"
+        value={totalVisitors.toString()}
         icon={<Users className="h-5 w-5" />}
         accentColor="#2196F3"
       />
       <Scorecard
         title="Total 1-on-1s"
-        value="24"
+        value={totalOneOnOnes.toString()}
         icon={<Handshake className="h-5 w-5" />}
         accentColor="#9C27B0"
       />
       <Scorecard
         title="Members Thanked"
-        value="8"
+        value={totalReferrals.toString()}
         subtitle="for closed business"
         icon={<Heart className="h-5 w-5" />}
         accentColor="#FF9800"

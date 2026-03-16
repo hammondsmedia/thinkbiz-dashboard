@@ -10,21 +10,29 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const chartData = [
-  { date: "Jan", revenue: 1200, visitors: 2, oneOnOnes: 4, thanked: 1 },
-  { date: "Feb", revenue: 2500, visitors: 4, oneOnOnes: 6, thanked: 3 },
-  { date: "Mar", revenue: 1800, visitors: 1, oneOnOnes: 5, thanked: 2 },
-  { date: "Apr", revenue: 3200, visitors: 5, oneOnOnes: 9, thanked: 2 },
-];
+interface WeeklyLog {
+  revenue: number;
+  visitors_brought: number;
+  one_on_ones_had: number;
+  referrals_given: number;
+  created_at: string;
+}
+
+interface DashboardChartsProps {
+  data: WeeklyLog[];
+}
+
+const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 interface MetricChartProps {
   title: string;
   dataKey: string;
   color: string;
+  chartData: any[];
   formatAsCurrency?: boolean;
 }
 
-function MetricChart({ title, dataKey, color, formatAsCurrency }: MetricChartProps) {
+function MetricChart({ title, dataKey, color, chartData, formatAsCurrency }: MetricChartProps) {
   const formatValue = (value: number) =>
     formatAsCurrency ? `$${value.toLocaleString()}` : value.toString();
 
@@ -45,7 +53,7 @@ function MetricChart({ title, dataKey, color, formatAsCurrency }: MetricChartPro
               tick={{ fontSize: 12, fill: "var(--color-muted-foreground)" }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={formatAsCurrency ? (v) => `$${v}` : undefined}
+              tickFormatter={formatAsCurrency ? (v) => `$${v/1000}k` : undefined}
               width={formatAsCurrency ? 50 : 30}
             />
             <Tooltip
@@ -74,29 +82,49 @@ function MetricChart({ title, dataKey, color, formatAsCurrency }: MetricChartPro
   );
 }
 
-export function DashboardCharts() {
+export function DashboardCharts({ data }: DashboardChartsProps) {
+  const monthlyTotals = data.reduce((acc, log) => {
+    const month = new Date(log.created_at).toLocaleString('default', { month: 'short' });
+    if (!acc[month]) {
+      acc[month] = { date: month, revenue: 0, visitors: 0, oneOnOnes: 0, thanked: 0 };
+    }
+    acc[month].revenue += log.revenue || 0;
+    acc[month].visitors += log.visitors_brought || 0;
+    acc[month].oneOnOnes += log.one_on_ones_had || 0;
+    acc[month].thanked += log.referrals_given || 0;
+    return acc;
+  }, {} as Record<string, { date: string; revenue: number; visitors: number; oneOnOnes: number; thanked: number; }>);
+
+  const chartData = monthOrder
+    .map(month => monthlyTotals[month])
+    .filter(Boolean);
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <MetricChart
         title="Revenue by Month"
         dataKey="revenue"
         color="#4CAF50"
+        chartData={chartData}
         formatAsCurrency
       />
       <MetricChart
         title="Visitors by Month"
         dataKey="visitors"
         color="#2196F3"
+        chartData={chartData}
       />
       <MetricChart
         title="1-on-1s by Month"
         dataKey="oneOnOnes"
         color="#9C27B0"
+        chartData={chartData}
       />
       <MetricChart
         title="Members Thanked by Month"
         dataKey="thanked"
         color="#FF9800"
+        chartData={chartData}
       />
     </div>
   );
