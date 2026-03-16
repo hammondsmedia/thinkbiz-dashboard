@@ -29,7 +29,7 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased font-sans`}>
         <Script id="outseta-options" strategy="beforeInteractive">
           {`
-            var outsetaOptions = {
+            window.o_options = {
               domain: 'thinkbizsolutions.outseta.com',
               load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
             };

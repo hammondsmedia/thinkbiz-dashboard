@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
 
   useEffect(() => {
@@ -39,8 +39,6 @@ export default function LoginPage() {
       if (typeof window !== 'undefined' && window.Outseta) {
         // Outseta doesn't provide a direct 'off' method in this context,
         // but it's good practice to have a cleanup function.
-        // If memory leaks become a concern, a more robust event
-        // subscription model might be needed.
       }
     };
   }, [router]);
@@ -48,11 +46,13 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-8">
       <div className="w-full max-w-sm rounded-lg border border-border bg-card p-8 shadow-sm">
-        {/* This div will be replaced by the Outseta login widget */}
+        {/* This div will be replaced by the Outseta registration widget */}
         <div 
           data-o-auth="1" 
-          data-mode="embed" 
-          data-widget-mode="login"
+          data-widget-mode="register" 
+          data-plan-uid="rQVqJlm6" 
+          data-skip-plan-options="true" 
+          data-mode="embed"
         ></div>
       </div>
     </main>
