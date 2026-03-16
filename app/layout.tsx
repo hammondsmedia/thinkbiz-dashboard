@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -26,6 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased font-sans`}>
+        <Script id="outseta-options" strategy="beforeInteractive">
+          {`
+            var outsetaOptions = {
+              domain: 'thinkbizsolutions.outseta.com',
+              load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+            };
+          `}
+        </Script>
+        <Script 
+          src="https://cdn.outseta.com/outseta.min.js" 
+          strategy="beforeInteractive" 
+        />
         {children}
       </body>
     </html>
