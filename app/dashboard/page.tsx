@@ -8,7 +8,6 @@ import { Scorecards } from "@/components/scorecards";
 import { DashboardCharts } from "@/components/dashboard-charts";
 
 export default async function DashboardPage() {
-  // 1. Authenticate the user via the Outseta cookie
   const cookieStore = await cookies();
   const token = cookieStore.get('outseta_token')?.value;
 
@@ -20,27 +19,49 @@ export default async function DashboardPage() {
   let logs;
 
   try {
-    // 2. Verify the token
     const JWKS = jose.createRemoteJWKSet(
       new URL(`https://${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}/.well-known/jwks`)
     );
     const { payload } = await jose.jwtVerify(token, JWKS);
+    
     const outsetaUserId = payload.sub; 
+    const email = payload.email?.toString().toLowerCase().trim();
 
-    // 3. Fetch data securely with the Service Role Key
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY! 
     );
 
-    // Get member details
-    const { data: memberData, error: memberError } = await supabase
+    // Try to find the user by their Outseta ID first
+    let { data: memberData, error: memberError } = await supabase
       .from('members')
       .select('*')
       .eq('outseta_user_id', outsetaUserId)
-      .single();
+      .maybeSingle(); 
 
-    if (memberError) throw memberError;
+    // If they aren't found by ID, this is their first time logging in. 
+    // Let's find them by email and sync the account.
+    if (!memberData && email) {
+      const { data: updatedMember, error: updateError } = await supabase
+        .from('members')
+        .update({ outseta_user_id: outsetaUserId })
+        .eq('email', email)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("Failed to sync new user:", updateError);
+        throw updateError;
+      }
+      
+      memberData = updatedMember;
+    }
+
+    // If we STILL don't have a member, they aren't in the historical spreadsheet at all
+    if (!memberData) {
+      redirect('/access-denied');
+    }
+
     member = memberData;
 
     // Get their weekly logs
@@ -56,14 +77,12 @@ export default async function DashboardPage() {
     redirect('/access-denied');
   }
 
-  // 4. Render the UI
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {/* Personalize the greeting if we found their name */}
             {member ? `Welcome back, ${member.first_name}` : 'Dashboard'}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -72,12 +91,10 @@ export default async function DashboardPage() {
         </div>
 
         <section aria-label="Key metrics" className="mb-8">
-          {/* Passing the logs down to the component to calculate totals */}
           <Scorecards data={logs} />
         </section>
 
         <section aria-label="Monthly trends">
-          {/* Passing the logs down to render the charts */}
           <DashboardCharts data={logs} />
         </section>
       </main>
