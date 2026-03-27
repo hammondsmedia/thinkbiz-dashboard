@@ -34,6 +34,9 @@ export default function RootLayout({
             window.o_options = {
               domain: 'thinkbizsolutions.outseta.com',
               load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+              auth: {
+                redirectUrl: '/dashboard'
+              }
             };
           `}
         </Script>
