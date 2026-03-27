@@ -27,22 +27,20 @@ export default async function DashboardPage() {
     const outsetaUserId = payload.sub; 
     const email = payload.email?.toString().toLowerCase().trim();
 
-    const supabase = createClient(
+    // 1. Admin Client: Used ONLY for syncing the profile on the first login
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY! 
     );
 
-    // Try to find the user by their Outseta ID first
-    let { data: memberData, error: memberError } = await supabase
+    let { data: memberData, error: memberError } = await supabaseAdmin
       .from('members')
       .select('*')
       .eq('outseta_user_id', outsetaUserId)
       .maybeSingle(); 
 
-    // If they aren't found by ID, this is their first time logging in. 
-    // Let's find them by email and sync the account.
     if (!memberData && email) {
-      const { data: updatedMember, error: updateError } = await supabase
+      const { data: updatedMember, error: updateError } = await supabaseAdmin
         .from('members')
         .update({ outseta_user_id: outsetaUserId })
         .eq('email', email)
@@ -53,22 +51,49 @@ export default async function DashboardPage() {
         console.error("Failed to sync new user:", updateError);
         throw updateError;
       }
-      
       memberData = updatedMember;
     }
 
-    // If we STILL don't have a member, they aren't in the historical spreadsheet at all
     if (!memberData) {
       redirect('/access-denied');
     }
 
     member = memberData;
 
-    // Get their weekly logs
-    const { data: logsData } = await supabase
+    // 2. Security Fix: Create a user-specific JWT for Supabase
+    // We set the 'sub' to the member's database ID so Row Level Security knows exactly who they are.
+    const supabaseEncodedJwtSecret = new TextEncoder().encode(
+      process.env.SUPABASE_JWT_SECRET
+    );
+
+    const supabaseJwt = await new jose.SignJWT({
+      ...payload,
+      sub: member.id, 
+      role: 'authenticated'
+    })
+      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setIssuer("supabase")
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(supabaseEncodedJwtSecret);
+
+    // 3. Secure Client: Used to fetch the user's private data
+    const supabaseSecure = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${supabaseJwt}`,
+          },
+        },
+      }
+    );
+
+    const { data: logsData } = await supabaseSecure
       .from('weekly_logs')
       .select('*')
-      .eq('member_id', member?.id);
+      .eq('member_id', member.id);
       
     logs = logsData || [];
 
