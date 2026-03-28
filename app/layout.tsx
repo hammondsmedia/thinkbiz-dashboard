@@ -32,8 +32,8 @@ export default function RootLayout({
         <Script id="outseta-options" strategy="beforeInteractive">
           {`
             window.o_options = {
-              domain: 'thinkbizsolutions.outseta.com',
-              load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+              domain: '${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}',
+              load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
               auth: {
                 redirectUrl: '/dashboard'
               }
