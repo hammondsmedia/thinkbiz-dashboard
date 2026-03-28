@@ -29,20 +29,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased font-sans`}>
-        <Script id="outseta-options" strategy="beforeInteractive">
-          {`
-            window.o_options = {
-              domain: '${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}',
-              load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
-              auth: {
-                redirectUrl: '/dashboard'
-              }
-            };
-          `}
-        </Script>
+        <Script 
+          id="outseta-options" 
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.o_options = {
+                domain: '${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}',
+                load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
+                auth: {
+                  redirectUrl: '/dashboard'
+                }
+              };
+            `
+          }}
+        />
         <Script 
           src="https://cdn.outseta.com/outseta.min.js" 
-          strategy="beforeInteractive" 
+          strategy="afterInteractive" 
         />
         {children}
       </body>
