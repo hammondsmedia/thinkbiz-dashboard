@@ -34,10 +34,7 @@ export default function RootLayout({
             __html: `
               window.o_options = {
                 domain: '${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}',
-                load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
-                auth: {
-                  redirectUrl: '/dashboard'
-                }
+                load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
               };
             `
           }}
