@@ -128,7 +128,7 @@ export default async function DashboardPage() {
       const revenuePromise = supabaseAdmin
         .from('closed_business_thanks')
         .select('revenue_amount')
-        .eq('thanked_member_id', member.id);
+        .eq('thanking_member_id', member.id);
       
       const [{ data: logsData }, { data: revenueData, error: revenueError }] = await Promise.all([
         logsPromise,
