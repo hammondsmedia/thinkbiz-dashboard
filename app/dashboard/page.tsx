@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Navbar } from "@/components/navbar";
 import { Scorecards } from "@/components/scorecards";
 import { DashboardCharts } from "@/components/dashboard-charts";
+import { WeeklyLogForm } from "@/components/WeeklyLogForm";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -171,8 +172,12 @@ export default async function DashboardPage() {
           <Scorecards logsData={logs} revenueData={revenue} />
         </section>
 
-        <section aria-label="Monthly trends">
+        <section aria-label="Monthly trends" className="mb-8">
           <DashboardCharts data={logs} />
+        </section>
+
+        <section aria-label="Weekly Log Entry" className="mt-8">
+          <WeeklyLogForm />
         </section>
       </main>
     </div>
