@@ -120,7 +120,12 @@ export default async function DashboardPage() {
         .select('*')
         .eq('member_id', member.id);
 
-      const revenuePromise = supabaseSecure
+      //const revenuePromise = supabaseSecure
+      //  .from('closed_business_thanks')
+      //  .select('revenue_amount')
+      //  .eq('thanked_member_id', member.id);
+
+      const revenuePromise = supabaseAdmin
         .from('closed_business_thanks')
         .select('revenue_amount')
         .eq('thanked_member_id', member.id);
