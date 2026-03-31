@@ -114,10 +114,16 @@ export default async function DashboardPage() {
         }
       );
 
-      const { data: logsData } = await supabaseSecure
+      const { data: logsData, error } = await supabaseSecure
         .from('weekly_logs')
         .select('*')
         .eq('member_id', member.id);
+
+      // --- TEMPORARY DEBUG ---
+      console.log('--- DB QUERY DEBUG ---');
+      console.log('Querying weekly_logs for member.id:', member.id);
+      console.log('Supabase error object:', error);
+      console.log('--------------------');
         
       logs = logsData || [];
     }
