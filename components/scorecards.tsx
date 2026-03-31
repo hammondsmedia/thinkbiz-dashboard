@@ -46,7 +46,7 @@ function Scorecard({ title, value, subtitle, icon, accentColor }: ScorecardProps
 }
 
 export function Scorecards({ logsData, revenueData }: ScorecardsProps) {
-  const totalRevenue = revenueData.reduce((acc, log) => acc + (log.revenue_amount || 0), 0);
+  const totalRevenue = revenueData.reduce((acc, log) => acc + (Number(log.revenue_amount) || 0), 0);
   const totalVisitors = logsData.reduce((acc, log) => acc + (log.visitors_brought || 0), 0);
   const totalOneOnOnes = logsData.reduce((acc, log) => acc + (log.one_on_ones_had || 0), 0);
   const totalReferrals = logsData.reduce((acc, log) => acc + (log.referrals_given || 0), 0);
