@@ -125,11 +125,15 @@ export default async function DashboardPage() {
         .select('revenue_amount')
         .eq('thanked_member_id', member.id);
       
-      const [{ data: logsData }, { data: revenueData }] = await Promise.all([
+      const [{ data: logsData }, { data: revenueData, error: revenueError }] = await Promise.all([
         logsPromise,
         revenuePromise
       ]);
         
+      console.log('\n--- REVENUE DEBUG ---');
+      console.log('Raw revenueData:', revenueData);
+      console.log('Revenue query error:', revenueError);
+
       logs = logsData || [];
       revenue = revenueData || [];
     }
