@@ -36,7 +36,7 @@ export default function RootLayout({
             __html: `
               window.o_options = {
                 domain: '${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}',
-                load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+                load: 'auth,customForm,emailList,leadCapture,profile,support'
               };
             `
           }}
