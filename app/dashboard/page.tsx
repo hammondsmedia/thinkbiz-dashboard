@@ -23,10 +23,19 @@ export default async function DashboardPage() {
     const JWKS = jose.createRemoteJWKSet(
       new URL(`https://${process.env.NEXT_PUBLIC_OUTSETA_DOMAIN}/.well-known/jwks`)
     );
-    const { payload } = await jose.jwtVerify(token, JWKS);
+    
+    // Added clockTolerance to prevent crashes from minor server time differences
+    const { payload } = await jose.jwtVerify(token, JWKS, {
+      clockTolerance: '15 seconds'
+    });
     
     const outsetaUserId = payload.sub; 
-    const email = payload.email?.toString().toLowerCase().trim();
+    const email = payload.email ? payload.email.toString().toLowerCase().trim() : null;
+
+    // --- DIAGNOSTICS: Check your terminal for these! ---
+    console.log("\n--- AUTH DEBUG ---");
+    console.log("JWT Payload sub (Outseta ID):", outsetaUserId);
+    console.log("JWT Payload email:", email);
 
     // 1. Admin Client: Used ONLY for syncing the profile on the first login
     const supabaseAdmin = createClient(
@@ -40,27 +49,43 @@ export default async function DashboardPage() {
       .eq('outseta_user_id', outsetaUserId)
       .maybeSingle(); 
 
+    // 2. Safer Sync Logic
     if (!memberData && email) {
-      const { data: updatedMember, error: updateError } = await supabaseAdmin
+      console.log(`Outseta ID ${outsetaUserId} not found. Searching for email: ${email}`);
+      
+      const { data: emailCheck } = await supabaseAdmin
         .from('members')
-        .update({ outseta_user_id: outsetaUserId })
+        .select('*')
         .eq('email', email)
-        .select()
-        .single();
+        .maybeSingle();
 
-      if (updateError) {
-        console.error("Failed to sync new user:", updateError);
-        throw updateError;
+      if (emailCheck) {
+        console.log("Email match found! Updating database with new Outseta ID...");
+        const { data: updatedMember, error: updateError } = await supabaseAdmin
+          .from('members')
+          .update({ outseta_user_id: outsetaUserId })
+          .eq('email', email)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("Failed to sync new user ID:", updateError);
+          throw updateError;
+        }
+        memberData = updatedMember;
+      } else {
+        console.log("Email not found in the members table.");
       }
-      memberData = updatedMember;
     }
 
     if (!memberData) {
+      console.log("Result: Access Denied. No matching member record found.");
       denyAccess = true;
     } else {
+      console.log(`Result: Success. Welcome, ${memberData.first_name}.`);
       member = memberData;
 
-      // 2. Security Fix: Create a user-specific JWT for Supabase
+      // 3. Security Fix: Create a user-specific JWT for Supabase
       const supabaseEncodedJwtSecret = new TextEncoder().encode(
         process.env.SUPABASE_JWT_SECRET!
       );
@@ -76,7 +101,7 @@ export default async function DashboardPage() {
         .setExpirationTime('1h')
         .sign(supabaseEncodedJwtSecret);
 
-      // 3. Secure Client: Used to fetch the user's private data
+      // 4. Secure Client: Used to fetch the user's private data
       const supabaseSecure = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -98,11 +123,12 @@ export default async function DashboardPage() {
     }
 
   } catch (error) {
-    console.error("Auth or Database Error:", error);
+    console.error("\n=== FATAL AUTH/DB ERROR ===");
+    console.error(error);
+    console.error("===========================\n");
     denyAccess = true;
   }
 
-  // Handle redirects outside the try/catch block
   if (denyAccess) {
     redirect('/access-denied');
   }
