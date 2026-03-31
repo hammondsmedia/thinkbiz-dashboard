@@ -16,8 +16,8 @@ export default async function DashboardPage() {
   }
 
   let member;
-  let logs = [];
-  let revenue = [];
+  let logs: any[] = [];
+  let revenue: { revenue_amount: number}[] = [];
   let denyAccess = false;
 
   try {
