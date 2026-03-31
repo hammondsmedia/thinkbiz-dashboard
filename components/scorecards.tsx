@@ -1,14 +1,18 @@
 import { DollarSign, Users, Handshake, Heart } from "lucide-react";
 
 interface WeeklyLog {
-  revenue: number;
   visitors_brought: number;
   one_on_ones_had: number;
   referrals_given: number;
 }
 
+interface RevenueLog {
+  revenue_amount: number;
+}
+
 interface ScorecardsProps {
-  data: WeeklyLog[];
+  logsData: WeeklyLog[];
+  revenueData: RevenueLog[];
 }
 
 interface ScorecardProps {
@@ -41,17 +45,24 @@ function Scorecard({ title, value, subtitle, icon, accentColor }: ScorecardProps
   );
 }
 
-export function Scorecards({ data }: ScorecardsProps) {
-  const totalRevenue = data.reduce((acc, log) => acc + (log.revenue || 0), 0);
-  const totalVisitors = data.reduce((acc, log) => acc + (log.visitors_brought || 0), 0);
-  const totalOneOnOnes = data.reduce((acc, log) => acc + (log.one_on_ones_had || 0), 0);
-  const totalReferrals = data.reduce((acc, log) => acc + (log.referrals_given || 0), 0);
+export function Scorecards({ logsData, revenueData }: ScorecardsProps) {
+  const totalRevenue = revenueData.reduce((acc, log) => acc + (log.revenue_amount || 0), 0);
+  const totalVisitors = logsData.reduce((acc, log) => acc + (log.visitors_brought || 0), 0);
+  const totalOneOnOnes = logsData.reduce((acc, log) => acc + (log.one_on_ones_had || 0), 0);
+  const totalReferrals = logsData.reduce((acc, log) => acc + (log.referrals_given || 0), 0);
+
+  const formattedRevenue = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(totalRevenue);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <Scorecard
         title="Total Revenue"
-        value={`$${totalRevenue.toLocaleString()}`}
+        value={formattedRevenue}
         icon={<DollarSign className="h-5 w-5" />}
         accentColor="#4CAF50"
       />

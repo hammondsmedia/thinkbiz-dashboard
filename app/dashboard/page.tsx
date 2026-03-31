@@ -16,7 +16,8 @@ export default async function DashboardPage() {
   }
 
   let member;
-  let logs = [];
+  let logs: any[] = [];
+  let revenue: { revenue_amount: number}[] = [];
   let denyAccess = false;
 
   try {
@@ -114,18 +115,23 @@ export default async function DashboardPage() {
         }
       );
 
-      const { data: logsData, error } = await supabaseSecure
+      const logsPromise = supabaseSecure
         .from('weekly_logs')
         .select('*')
         .eq('member_id', member.id);
 
-      // --- TEMPORARY DEBUG ---
-      console.log('--- DB QUERY DEBUG ---');
-      console.log('Querying weekly_logs for member.id:', member.id);
-      console.log('Supabase error object:', error);
-      console.log('--------------------');
+      const revenuePromise = supabaseSecure
+        .from('closed_business_thanks')
+        .select('revenue_amount')
+        .eq('thanked_member_id', member.id);
+      
+      const [{ data: logsData }, { data: revenueData }] = await Promise.all([
+        logsPromise,
+        revenuePromise
+      ]);
         
       logs = logsData || [];
+      revenue = revenueData || [];
     }
 
   } catch (error) {
@@ -153,7 +159,7 @@ export default async function DashboardPage() {
         </div>
 
         <section aria-label="Key metrics" className="mb-8">
-          <Scorecards data={logs} />
+          <Scorecards logsData={logs} revenueData={revenue} />
         </section>
 
         <section aria-label="Monthly trends">
