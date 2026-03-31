@@ -16,7 +16,8 @@ export default async function DashboardPage() {
   }
 
   let member;
-  let logs;
+  let logs = [];
+  let denyAccess = false;
 
   try {
     const JWKS = jose.createRemoteJWKSet(
@@ -55,50 +56,54 @@ export default async function DashboardPage() {
     }
 
     if (!memberData) {
-      redirect('/access-denied');
-    }
+      denyAccess = true;
+    } else {
+      member = memberData;
 
-    member = memberData;
+      // 2. Security Fix: Create a user-specific JWT for Supabase
+      const supabaseEncodedJwtSecret = new TextEncoder().encode(
+        process.env.SUPABASE_JWT_SECRET!
+      );
 
-    // 2. Security Fix: Create a user-specific JWT for Supabase
-    // We set the 'sub' to the member's database ID so Row Level Security knows exactly who they are.
-    const supabaseEncodedJwtSecret = new TextEncoder().encode(
-      process.env.SUPABASE_JWT_SECRET
-    );
+      const supabaseJwt = await new jose.SignJWT({
+        ...payload,
+        sub: member.id, 
+        role: 'authenticated'
+      })
+        .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+        .setIssuer("supabase")
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(supabaseEncodedJwtSecret);
 
-    const supabaseJwt = await new jose.SignJWT({
-      ...payload,
-      sub: member.id, 
-      role: 'authenticated'
-    })
-      .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-      .setIssuer("supabase")
-      .setIssuedAt()
-      .setExpirationTime('1h')
-      .sign(supabaseEncodedJwtSecret);
-
-    // 3. Secure Client: Used to fetch the user's private data
-    const supabaseSecure = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${supabaseJwt}`,
+      // 3. Secure Client: Used to fetch the user's private data
+      const supabaseSecure = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${supabaseJwt}`,
+            },
           },
-        },
-      }
-    );
+        }
+      );
 
-    const { data: logsData } = await supabaseSecure
-      .from('weekly_logs')
-      .select('*')
-      .eq('member_id', member.id);
-      
-    logs = logsData || [];
+      const { data: logsData } = await supabaseSecure
+        .from('weekly_logs')
+        .select('*')
+        .eq('member_id', member.id);
+        
+      logs = logsData || [];
+    }
 
   } catch (error) {
     console.error("Auth or Database Error:", error);
+    denyAccess = true;
+  }
+
+  // Handle redirects outside the try/catch block
+  if (denyAccess) {
     redirect('/access-denied');
   }
 

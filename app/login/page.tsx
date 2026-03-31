@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
 // Augment the Window interface
 declare global {
   interface Window {
@@ -13,28 +10,6 @@ declare global {
 }
 
 export default function UnifiedAuthPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // 1. Single listener that handles successful auth from EITHER widget
-    const handleToken = (token: string) => {
-      if (token) {
-        document.cookie = `outseta_token=${token}; max-age=86400; path=/; SameSite=Lax; Secure`;
-        router.push('/dashboard');
-      }
-    };
-
-    // 2. Wait for Outseta to load, then attach the listener
-    const checkOutsetaInterval = setInterval(() => {
-      if (typeof window !== 'undefined' && window.Outseta) {
-        window.Outseta.on('accessToken.set', handleToken);
-        clearInterval(checkOutsetaInterval); 
-      }
-    }, 100);
-
-    return () => clearInterval(checkOutsetaInterval);
-  }, [router]);
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 sm:p-8">
       
