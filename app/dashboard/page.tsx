@@ -116,7 +116,7 @@ export default async function DashboardPage() {
         }
       );
 
-      const logsPromise = supabaseSecure
+      const logsPromise = supabaseAdmin
         .from('weekly_logs')
         .select('*')
         .eq('member_id', member.id);
