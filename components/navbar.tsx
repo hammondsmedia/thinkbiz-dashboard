@@ -33,14 +33,14 @@ export function Navbar() {
             Support
           </Link>
 
-          <button
-            type="button"
+          <a
+            href="https://thinkbizsolutions.outseta.com/profile?#o-authenticated"
             data-o-profile-link="true"
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <User className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">My Account</span>
-          </button>
+          </a>
 
           <button
             type="button"
