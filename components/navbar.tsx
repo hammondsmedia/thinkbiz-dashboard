@@ -34,22 +34,12 @@ export function Navbar() {
           </Link>
 
           <a
-            href="https://thinkbizsolutions.outseta.com/profile?#o-authenticated"
-            data-o-profile-link="true"
+            href="/profile"
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <User className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">My Account</span>
           </a>
-
-          <button
-            type="button"
-            data-o-logout-link="true"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Log Out</span>
-          </button>
         </div>
       </nav>
     </header>
