@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, LogOut, User, LifeBuoy } from "lucide-react";
+import Image from "next/image";
+import { User, LifeBuoy } from "lucide-react";
 
 export function Navbar() {
   return (
@@ -11,10 +12,13 @@ export function Navbar() {
           href="/dashboard"
           className="flex items-center gap-2 text-foreground transition-opacity hover:opacity-80"
         >
-          <BarChart3 className="h-6 w-6 text-primary" aria-hidden="true" />
-          <span className="text-lg font-semibold tracking-tight">
-            ThinkBiz Solutions
-          </span>
+          <Image
+            src="/thinkbiz-logo-horizontal.png"
+            alt="ThinkBiz Solutions Logo"
+            width={150}
+            height={40}
+            priority
+          />
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
