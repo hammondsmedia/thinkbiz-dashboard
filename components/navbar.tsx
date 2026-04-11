@@ -7,11 +7,18 @@ import { User, LifeBuoy } from "lucide-react";
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           href="/dashboard"
           className="flex items-center gap-2 text-foreground transition-opacity hover:opacity-80"
         >
+          <Image
+            src="/ThinkbizEmblem.png"
+            alt="ThinkBiz Icon"
+            width={32}
+            height={32}
+            priority
+          />
           <Image
             src="/thinkbiz-logo-horizontal.png"
             alt="ThinkBiz Solutions Logo"
