@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -41,7 +41,7 @@ function MetricChart({ title, dataKey, color, chartData, formatAsCurrency }: Met
       <h3 className="mb-4 text-sm font-semibold text-card-foreground">{title}</h3>
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis
               dataKey="date"
@@ -67,15 +67,12 @@ function MetricChart({ title, dataKey, color, chartData, formatAsCurrency }: Met
               formatter={(value: number) => [formatValue(value), title]}
               labelStyle={{ fontWeight: 600, marginBottom: 4 }}
             />
-            <Line
-              type="monotone"
+            <Bar
               dataKey={dataKey}
-              stroke={color}
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: color, strokeWidth: 2, stroke: "var(--color-card)" }}
-              activeDot={{ r: 6, stroke: color, strokeWidth: 2, fill: "var(--color-card)" }}
+              fill={color}
+              radius={[4, 4, 0, 0]}
             />
-          </LineChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
