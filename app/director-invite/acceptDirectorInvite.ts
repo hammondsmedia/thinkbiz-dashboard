@@ -50,17 +50,15 @@ export async function acceptDirectorInvite(
     .ilike('email', claims.email)
     .maybeSingle();
 
-  if (existingMember?.auth_user_id) {
-    return {
-      success: false,
-      message: 'An account already exists for this email. Use the login page or contact ThinkBiz Support.',
-    };
-  }
-
-  // Mint a sign-in link the same way member approval does: an invite link for a
-  // brand-new auth user, or a magic link if the auth account already exists
-  // (e.g. a prior claim attempt created it before the member row was saved).
-  // Either way the recipient lands on /update-password to set a password.
+  // Promote an existing member to director rather than dead-ending. Directors
+  // are frequently drawn from a club's current membership, so the invited email
+  // often already has a member row and an auth account. buildOnboardingLink
+  // handles both worlds — an invite link for a brand-new auth user, or a magic
+  // link for one that already exists (an existing member, or a prior claim
+  // attempt that created the auth user before the member row was saved). Either
+  // way the sign-in link goes only to the invited address, so an existing
+  // account can only be claimed by whoever controls that inbox. The recipient
+  // lands on /update-password, where they can set (or keep) a password.
   const link = await buildOnboardingLink(admin, claims.email, '/update-password');
   if (!link) {
     return { success: false, message: 'Could not create your sign-in link. Please try again.' };

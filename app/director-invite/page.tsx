@@ -42,11 +42,9 @@ export default async function DirectorInvitePage({
     .ilike('email', claims.email)
     .maybeSingle();
 
-  if (existingMember?.auth_user_id) {
-    return (
-      <InviteError message="An account already exists for this email. Use the login page or contact ThinkBiz Support." />
-    );
-  }
+  // An existing account is not a dead end: claiming promotes that member to
+  // Club Director and emails them a sign-in link (see acceptDirectorInvite).
+  const alreadyHasAccount = !!existingMember?.auth_user_id;
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +55,12 @@ export default async function DirectorInvitePage({
         <p className="text-gray-500 mb-8">
           You&apos;re being set up as Club Director for <strong>{club.name}</strong>.
         </p>
-        <DirectorInviteForm token={token} email={claims.email} clubName={club.name} />
+        <DirectorInviteForm
+          token={token}
+          email={claims.email}
+          clubName={club.name}
+          alreadyHasAccount={alreadyHasAccount}
+        />
       </main>
     </div>
   );

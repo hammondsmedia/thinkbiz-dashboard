@@ -7,9 +7,10 @@ interface Props {
   token: string;
   email: string;
   clubName: string;
+  alreadyHasAccount?: boolean;
 }
 
-export default function DirectorInviteForm({ token, email, clubName }: Props) {
+export default function DirectorInviteForm({ token, email, clubName, alreadyHasAccount }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -34,8 +35,17 @@ export default function DirectorInviteForm({ token, email, clubName }: Props) {
         <h2 className="text-2xl font-bold text-foreground mb-4">Check your email</h2>
         <div className="border-t-4 border-primary w-16 mx-auto mb-4" />
         <p className="text-base leading-relaxed text-gray-900">
-          We&apos;ve sent a link to <strong>{email}</strong> to set your password. Click it,
-          set a password, then sign in to finish setting up your {clubName} Director profile.
+          {alreadyHasAccount ? (
+            <>
+              We&apos;ve sent a sign-in link to <strong>{email}</strong>. Click it to sign in —
+              you now have Club Director access for {clubName}.
+            </>
+          ) : (
+            <>
+              We&apos;ve sent a link to <strong>{email}</strong> to set your password. Click it,
+              set a password, then sign in to finish setting up your {clubName} Director profile.
+            </>
+          )}
         </p>
       </div>
     );
@@ -53,9 +63,18 @@ export default function DirectorInviteForm({ token, email, clubName }: Props) {
         />
       </div>
       <p className="text-sm text-gray-600 leading-relaxed">
-        Click below to claim your Club Director account for <strong>{clubName}</strong>. We&apos;ll
-        email you a link to set a password. After signing in you&apos;ll be walked through a short
-        profile setup before you reach your dashboard.
+        {alreadyHasAccount ? (
+          <>
+            You already have a ThinkBiz account. Click below to add Club Director access for{' '}
+            <strong>{clubName}</strong>. We&apos;ll email you a secure link to sign in.
+          </>
+        ) : (
+          <>
+            Click below to claim your Club Director account for <strong>{clubName}</strong>.
+            We&apos;ll email you a link to set a password. After signing in you&apos;ll be walked
+            through a short profile setup before you reach your dashboard.
+          </>
+        )}
       </p>
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
